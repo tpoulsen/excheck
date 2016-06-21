@@ -3,29 +3,31 @@ defmodule ExCheck.Statement do
   Provides macros for test statements.
   """
 
-  @doc """
-  Generate property method and ExUnit tests.
-  """
-  defmacro property(message, [do: contents]) do
-    contents = Macro.escape(contents, unquote: true)
-    quote bind_quoted: binding do
-      def unquote(:"prop_#{message}")(), do: unquote(contents)
-      test :"#{message}_property", context do
-        assert ExCheck.check(unquote(:"prop_#{message}")(), context[:iterations])
-      end
-    end
-  end
+  #@doc """
+  #Generate property method and ExUnit tests.
+  #"""
+  #defmacro property(message, [do: contents]) do
+  #  contents = Macro.escape(contents, unquote: true)
+  #  quote bind_quoted: binding do
+  #    name = ExUnit.Case.register_test(__ENV__, :property, message, [])
+  #    def unquote(name)(), do: unquote(contents)
+  #    test :"#{message}_property", context do
+  #      assert ExCheck.check(unquote(:"prop_#{message}")(), context[:iterations])
+  #    end
+  #  end
+  #end
 
   @doc """
   Generate property method and ExUnit tests with var context.
   """
-  defmacro property(message, var, [do: contents]) do
+  defmacro property(message, var \\ quote(do: _), [do: contents]) do
     var      = Macro.escape(var)
     contents = Macro.escape(contents, unquote: true)
     quote bind_quoted: binding do
-      def unquote(:"prop_#{message}")(unquote(var)), do: unquote(contents)
+      name = ExUnit.Case.register_test(__ENV__, :property, message, [])
+      def unquote(name)(unquote(var)), do: unquote(contents)
       test :"#{message}_property", var do
-        assert ExCheck.check(unquote(:"prop_#{message}")(var), var[:iterations])
+        assert ExCheck.check(unquote(name)(var), var[:iterations])
       end
     end
   end
